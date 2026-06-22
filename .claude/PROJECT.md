@@ -2,7 +2,7 @@
 > mémoire projet CMF — PERMANENT+PROVISOIRE
 
 # META
-proj:CBF v:0.1 updated:[2026-06-22]
+proj:CBF v:0.2 updated:[2026-06-22]
 phase:pré-pilote team:odumas+Claude
 spec:v0.4 statut:pilote-ready
 adjacent:CMF #CMF=mémoire_projet CBF=brokering_consultation
@@ -17,7 +17,7 @@ solution:CC relaie question vers agent_Claude_externe via API #sans quitter VSC
 format:Markdown #règles_comportementales comme CMF
 script:JS|TS #appel_API /v1/messages
 hooks:? #à_évaluer_pilote
-api:Anthropic /v1/messages model:claude-sonnet-4-6 #fixé !Opus
+api:provider-agnostic CBF_PROVIDER=anthropic(défaut)|groq model:claude-sonnet-4-6(anthropic)|llama-3.3-70b-versatile(groq) #fixé !Opus
 
 # ARCH
 composants:
@@ -66,8 +66,11 @@ CBF_vérifie:CMF_avant_artefact #contrainte_connue? !retransmettre
 risque:décalage_fraîcheur claude.ai↔PROJECT.md #hors_périmètre_CBF, hérite_sans_résoudre
 
 # ENV_KEY
-ANTHROPIC_API_KEY:à_gérer #gestion non spécifiée pilote
+CBF_PROVIDER:anthropic(défaut)|groq
+ANTHROPIC_API_KEY|GROQ_API_KEY:user_env_var persisté par cbf-init #registry Windows, profil shell Linux/Mac
+CBF_MODEL:optionnel override modèle
 max_tokens:1000 #à calibrer usage réel
+!clé_exposée_auto_session_CC_courante → restart_CC_après_init
 
 # TODO
 ✓ mot-clé:bridge: #POC, NL trop ambigu (overlap recherche_session vs consultation_externe)
@@ -75,7 +78,8 @@ max_tokens:1000 #à calibrer usage réel
 ✓ src/templates/bridge_calibration.md #template compteurs cross-projet
 ✓ src/templates/claude_instruction.md #snippet règle détection+séquence complète
 ✓ cbf-init.ps1|sh #racine repo, bridge.js→~/.claude/cbf/, calibration+instruction injectés
-✓ clé_API:ANTHROPIC_API_KEY héritée de CC #si CC tourne, clef présente par définition !check_init
+✓ clé_API:user_env_var persisté cbf-init #provider-agnostic, restart CC requis après 1er init
+✓ bridge.js:provider-agnostic CBF_PROVIDER=anthropic|groq #Groq pour POC test (free tier)
 * pilote: observer catégories_émergentes §2.8 + fatigue_confirmation §2.8
 
 # RISKS
@@ -93,7 +97,7 @@ coût_tokens:Mode_B_récurrent → surveiller
 
 # NON_SPÉCIFIÉ_PILOTE
 mot-clé_exact:bridge: #POC → adapter après pilote si besoin
-clé_API:gestion à trancher
+clé_API:user_env_var #POC→keytar post-pilote si distribution hors dev-context
 max_tokens:à_calibrer
 re-proposition_après_refus_promu_propose:cadence_non_définie
 catégorie_autonome+contradictions_répétées:retour_strict=auto_ou_humain?
@@ -106,4 +110,4 @@ fiabilité_classification_simple:observer_empiriquement §1.7bis
 4. pilote → observer §2.8
 
 # SESSION_LOG
-[2026-06-22] init_projet CBF|bootstrap PROJECT.md|src/bridge.js+templates créés|mot-clé:bridge: acté [files:4 redirect:0 scope:✓ conv:✓]
+[2026-06-22] CC-1 init_projet|structure complète spec v0.4|mot-clé:bridge:|cbf-init.ps1+sh|provider-agnostic groq|clé API user_env_var|git:dev+main alignés ?test_bridge_bloqué_restart_CC [files:4 redirect:2 scope:✓ conv:✓]

@@ -11,6 +11,22 @@ CALIB_DEST="$CLAUDE_DIR/bridge_calibration.md"
 BRIDGE_DEST="$CBF_DIR/bridge.js"
 TARGET_MD="$(pwd)/CLAUDE.md"
 
+# 0. Verifier/configurer la cle API selon le provider (defaut: anthropic)
+PROVIDER="${CBF_PROVIDER:-anthropic}"
+if [ "$PROVIDER" = "groq" ]; then KEY_ENV="GROQ_API_KEY"; KEY_HINT="gsk_..."; else KEY_ENV="ANTHROPIC_API_KEY"; KEY_HINT="sk-ant-..."; fi
+
+if [ -z "${!KEY_ENV}" ]; then
+    read -r -s -p "[CBF] Cle API ($PROVIDER / $KEY_HINT): " api_key
+    echo ""
+    export "$KEY_ENV"="$api_key"
+    PROFILE="$HOME/.bashrc"
+    [ -f "$HOME/.zshrc" ] && PROFILE="$HOME/.zshrc"
+    echo "export $KEY_ENV=\"$api_key\"" >> "$PROFILE"
+    echo "[CBF] $KEY_ENV configuree -> $PROFILE (redemarrer le shell pour prise en compte)"
+else
+    echo "[CBF] $KEY_ENV deja configuree OK"
+fi
+
 # 1. Créer ~/.claude/cbf/
 mkdir -p "$CBF_DIR"
 
